@@ -1,0 +1,13 @@
+{
+    "mysql": {
+      "host": "your-mysql-host",
+      "user": "your-mysql-user",
+      "password": "your-mysql-password",
+      "database": "your-mysql-database"
+    },
+    "proxyServices": {
+      "service1": "http://service1-url",
+      "service2": "http://service2-url"
+    }
+  }
+  
