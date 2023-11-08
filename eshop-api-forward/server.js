@@ -3,9 +3,10 @@ const app = require('express')();
 const cache = require('memory-cache');
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 const rabbitmq = require('./rabbitmq'); // Import module for RabbitMQ
+const sql = require('mssql');
 
 const defaultPrefix = "g1";
-let mysqlConnection;
+
 /**
  * Callback để clear cache
  * Trường hợp chạy balance nhiều service thì không được
@@ -27,13 +28,6 @@ function getProxyUrl(incomingMessage) {
     }
     return prefix + "/" + originalUrl;
 }
-/**
- * Lần đầu start lên lấy hết danh sách company để cache
- * Chú ý có paging đến hết
- */
-function initCache() {
-    cache.clear();
-}
 
 const clearCacheAndReload = async () => {
     // Clear cache and reload configuration from MySQL
@@ -50,7 +44,7 @@ rabbitmq.cacheUpdateEmitter.on('cacheUpdated', () => {
 const updateCache = async (companyId) => {
     let rows;
     if (companyId){
-        rows = await mysqlConnection.query('SELECT * FROM config_table WHERE cpid=@cpid',companyId);
+        rows = await sql.query(`SELECT * FROM config_table WHERE cpid = ${companyId}`);        
     }else{
         rows = await mysqlConnection.query('SELECT * FROM config_table');
     }
@@ -68,7 +62,7 @@ rabbitmq.connectRabbitMQ(); // Connect to RabbitMQ
 
 const startServer = async () => {
     try {
-        mysqlConnection = await mysql.createConnection(config.mysql);
+        await sql.connect('Server=localhost,1433;Database=database;User Id=username;Password=password;Encrypt=true')
 
         await updateCache();
 
